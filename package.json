@@ -3,8 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "axios": "^0.18.0",
     "react": "^16.3.1",
-    "react-dom": "^16.3.1"
+    "react-audio-player": "^0.10.0",
+    "react-bootstrap": "^0.32.1",
+    "react-dom": "^16.3.1",
+    "react-dropzone": "^4.2.9",
+    "react-loader": "^2.4.5",
+    "react-progressbar": "^15.4.1",
+    "speaker": "^0.4.1",
+    "styled-components": "^3.2.6"
   },
   "devDependencies": {
     "react-scripts": "1.1.4"
