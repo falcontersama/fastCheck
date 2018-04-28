@@ -1,9 +1,11 @@
 import React from 'react'
 import axios from 'axios'
-import { Button, FormControl } from 'react-bootstrap'
-import styled from 'styled-components';
-import Progress from 'react-progressbar';
-import ReactAudioPlayer from 'react-audio-player';
+import "./App.css"
+import { Button, FormControl, Table } from 'react-bootstrap'
+import styled from 'styled-components'
+import Progress from 'react-progressbar'
+import ReactAudioPlayer from 'react-audio-player'
+
 
 var Loader = require('react-loader');
 
@@ -20,21 +22,33 @@ const UploadBox = styled.div`
     width: 50%;
     height: 50%;
     margin: auto;
-    min-width: 500px;
-    padding-top: 30vh;
+    min-width: 400px;
+`;
+
+const ResultBox = styled.div`
+    text-align: center;
+    width: 50%;
+    margin: auto;
+    min-width: 300px;
+`
+
+const TableBox = styled.div`
+    max-height:60vh;
+    overflow-y:scroll;
 `;
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedFile : null,
+      selectedFile : null, 
       page : "Home",
       progress: null,
       loaded: false,
       apiID:"",
       sound:false,
-      results:null
+      waitRekog: false,
+      results:{"arh":"present", "ter":"absent", "ter1":"absent", "ter2":"absent", "ter3":"absent","ter4":"absent", "ter5":"absent", "ter6":"absent", "ter7":"absent"}
     }
     this.fileUploadHandler = this.fileUploadHandler.bind(this)
   }
@@ -58,17 +72,18 @@ class App extends React.Component {
     })
       .then(res => {
         console.log(res)
-        this.setState({ apiID: "http://localhost:5555" + res.data})
+        this.setState({ apiID: "http://localhost:5555" + res.data, waitRekog:true})
       })
       .then(()=>{
-        console.log(this.state.apiID)
         interval = setInterval(()=>{
             axios.get(this.state.apiID)
               .then((res)=>{
-                    console.log(res.data)
                     if(res.data.Status === "SUCCEEDED"){
-                      console.log("check1")
-                      this.setState({results:res.data.Results,loaded:true, page : "Result", sound:true})
+                      console.log(res.data)
+                      this.setState({ results:res.data.StatusList,
+                                      loaded:true, 
+                                      page : "Result", 
+                                      sound:true})
                       clearInterval(interval)
                     }
                 }
@@ -78,59 +93,104 @@ class App extends React.Component {
   }
 
   render() {
+    const { vals } = this.state;
     return (
       <Background>
-        
+        <div className="area" >
+            <ul className="circles" style={{marginBottom:"0px"}}>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+            </ul>
+        </div >
+
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous" />
+        
         {this.state.page === "Home"? 
-          <UploadBox>
-            <h1>Fastcheck</h1>
-            <br/>
-            <br/>
-            <br/>
-            <div style={{fontSize:"20px", color:"white", position:"relative", justifyContent: 'center', paddingLeft:"15vw", minWidth:"300px"}}>
-            <FormControl
-                type="file"
-                onChange={this.fileSelectHandler}
-                
-              />
-            </div>
-            <br />
-            <br />
-            <div style={{justifyContent: 'center', minWidth:"300px"}}>
-            <Button onClick={this.fileUploadHandler} >Upload!</Button>
-            </div>
-            
-            {this.state.progress === 100 ? 
-            <div style={{marginTop:"5vh"}}>
-              <div><h3>Wait response from server</h3></div>
-              <div style={{position:"relative", top:"0%", marginTop:"5vh"}}>
-                <Loader loaded={this.state.loaded} />
+        <div className="context" style={{top:"30vh"}}>
+            <UploadBox>
+              <h1 style={{color:"white"}}>Fastcheck</h1>
+              <br/>
+              <br/>
+              <br/>
+              <div style={{fontSize:"20px", color:"white", justifyContent: 'center', paddingLeft:"15vw", minWidth:"300px"}}>
+              <FormControl
+                  type="file"
+                  onChange={this.fileSelectHandler}
+                  
+                />
               </div>
-            </div>:
-            <div style={{marginTop:"5vh"}}>
-              {this.state.progress == null ?
-                <div/>:
-                <div style={{position:"relative", top:"0%", marginTop:"5vh"}}>
-                  <div><h3>Uploading Video</h3></div>
-                  <Progress completed={this.state.progress} />
-                </div>
-              }
+              <br />
+              <br />
+              <div style={{justifyContent: 'center', minWidth:"300px"}}>
+              <Button onClick={this.fileUploadHandler} >Upload!</Button>
+              </div>
               
-            </div>}
-          </UploadBox> :
-          <div>
-            <ReactAudioPlayer
-              src="http://localhost:5555/result/getvoice"
-              autoPlay={this.state.sound}
-              controls
-            />
+              {this.state.progress === 100 ? 
+              <div style={{marginTop:"5vh"}}>
+                {this.state.waitRekog == true? 
+                  <div><h3>Wait response from Rekognition, Comparing Picture</h3></div>:
+                  <div><h3>Wait response from server, processing video</h3></div>
+                }
+                
+                <div style={{position:"relative", top:"0%", marginTop:"5vh"}}>
+                  <Loader loaded={this.state.loaded} />
+                </div>
+              </div>:
+              <div style={{marginTop:"5vh"}}>
+                {this.state.progress == null ?
+                  <div/>:
+                  <div style={{position:"relative", top:"0%", marginTop:"5vh"}}>
+                    
+                    <div><h3>Uploading Video</h3></div>
+                    <Progress completed={this.state.progress} />
+                  </div>
+                }
+                
+              </div>}
+            </UploadBox>
+          </div> :
+          <div className="context" style={{top:"10vh"}}>
+            <ResultBox>
+              <h1>Who is attendance ?</h1>
+              <ReactAudioPlayer
+                src="http://localhost:5555/getvoice"
+                autoPlay={this.state.sound}
+                controls
+              />
+              <br />
+              <br />
+              <TableBox>
+                <Table responsive bordered style={{height:"100px", overflow:"auto"}}>
+                  <thead style={{color:"white", backgroundColor:"rgba(0,0,0,0.7)"}}>
+                    <tr>
+                      <th style={{textAlign:"center"}}><h3>Name</h3></th>
+                      <th style={{textAlign:"center"}}><h3>Attendance</h3></th>
+                    </tr>
+                  </thead>
+                  <tbody style={{color:"white", backgroundColor:"rgba(0,0,0,0.4)"}}>
+                    {Object.entries(this.state.results).map(([key, value]) =>(
+                      <tr key={key}>
+                        <td><h5>{key}</h5></td>
+                        <td><h5>{value}</h5></td>
+                      </tr>
+                    ))}
+
+                  </tbody>
+                </Table>
+              </TableBox>
+            </ResultBox>
+            
           </div>
         }
-        
-        
-
-
+  
       </Background>
     )
   }
