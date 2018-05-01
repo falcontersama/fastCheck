@@ -1,10 +1,11 @@
 import React from 'react'
 import axios from 'axios'
 import "./App.css"
-import { Button, FormControl, Table } from 'react-bootstrap'
+import { Button, Table } from 'react-bootstrap'
 import styled from 'styled-components'
 import Progress from 'react-progressbar'
 import ReactAudioPlayer from 'react-audio-player'
+import $ from 'jquery'
 
 
 var Loader = require('react-loader');
@@ -37,6 +38,14 @@ const TableBox = styled.div`
     overflow-y:scroll;
 `;
 
+const ChooseFileBox = styled.div`
+    font-size: 30px; 
+    color: white; 
+    justify-content: center; 
+    text-align: center;
+    padding: 20px;
+`
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -48,21 +57,31 @@ class App extends React.Component {
       apiID:"",
       sound:false,
       waitRekog: false,
-      results:{"arh":"present", "ter":"absent", "ter1":"absent", "ter2":"absent", "ter3":"absent","ter4":"absent", "ter5":"absent", "ter6":"absent", "ter7":"absent"}
+      results:{}
     }
     this.fileUploadHandler = this.fileUploadHandler.bind(this)
+    this.toggleAttend = this.toggleAttend.bind(this)
   }
 
 
   fileSelectHandler = event => {
+
     this.setState({selectedFile : event.target.files[0]})
+    let label = $('input').next('.js-labelFile')
+    let labelVal = label.html();
+    let fileName = '';
+    if (event.target.value) fileName = event.target.value.split('\\').pop();
+    fileName ? label.addClass('has-file').find('.js-fileName').html(fileName) : label.removeClass('has-file').html(labelVal);
+   
   }
 
   
 
   fileUploadHandler = event => {
-    const fd = new FormData();
-    let interval;
+    $('input')[0].disabled = true
+    
+    const fd = new FormData()
+    let interval
     fd.append('video', this.state.selectedFile, this.state.selectedFile.name)
     axios.post('http://localhost:5555/upload', fd, {
       onUploadProgress: progressEvent => {
@@ -78,22 +97,35 @@ class App extends React.Component {
         interval = setInterval(()=>{
             axios.get(this.state.apiID)
               .then((res)=>{
-                    if(res.data.Status === "SUCCEEDED"){
-                      console.log(res.data)
-                      this.setState({ results:res.data.StatusList,
-                                      loaded:true, 
-                                      page : "Result", 
-                                      sound:true})
-                      clearInterval(interval)
-                    }
-                }
-            );
+                  if(res.data.Status === "SUCCEEDED"){
+                    console.log(res.data)
+                    this.setState({ results:res.data.StatusList,
+                                    loaded:true, 
+                                    page : "Result", 
+                                    sound:true})
+                    clearInterval(interval)
+                  }
+                })
         },5000);
       })
   }
 
+  toggleAttend(idx){
+    console.log(idx)
+    if(this.state.results[idx] === "present"){
+      let results = this.state.results
+      results[idx] = "absent"
+      this.setState({results:results})
+      this.forceUpdate()
+    }else if(this.state.results[idx] === "absent"){
+      let results = this.state.results
+      results[idx] = "present"
+      this.setState({results:results})
+      this.forceUpdate()
+    }
+  }
+
   render() {
-    const { vals } = this.state;
     return (
       <Background>
         <div className="area" >
@@ -110,8 +142,6 @@ class App extends React.Component {
                     <li></li>
             </ul>
         </div >
-
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous" />
         
         {this.state.page === "Home"? 
         <div className="context" style={{top:"30vh"}}>
@@ -120,32 +150,39 @@ class App extends React.Component {
               <br/>
               <br/>
               <br/>
-              <div style={{fontSize:"20px", color:"white", justifyContent: 'center', paddingLeft:"15vw", minWidth:"300px"}}>
-              <FormControl
+              <ChooseFileBox>
+              {/* <FormControl
                   type="file"
                   onChange={this.fileSelectHandler}
-                  
-                />
+                  style={{color:"red"}}
+                /> */}
+              <div className="form-group">
+                <input type="file" name="file" id="file" className="input-file" onChange={this.fileSelectHandler}/>
+                <label htmlFor="file" className="btn btn-tertiary js-labelFile">
+                  <i className="icon fa fa-check"></i>
+                  <span className="js-fileName" style={{margin:"10px"}}>Choose a file</span>
+                </label>
               </div>
+              </ChooseFileBox>
               <br />
               <br />
               <div style={{justifyContent: 'center', minWidth:"300px"}}>
-              <Button onClick={this.fileUploadHandler} >Upload!</Button>
+              <Button style={{fontSize:"30px"}} bsStyle="success" onClick={this.fileUploadHandler} >Upload!!!</Button>
               </div>
               
               {this.state.progress === 100 ? 
               <div style={{marginTop:"5vh"}}>
-                {this.state.waitRekog == true? 
-                  <div><h3>Wait response from Rekognition, Comparing Picture</h3></div>:
-                  <div><h3>Wait response from server, processing video</h3></div>
+                {this.state.waitRekog === true? 
+                  <div><h3 style={{color:"white"}}>Wait response from Rekognition, Comparing Pictures</h3></div>:
+                  <div><h3 style={{color:"white"}}>Wait response from server, Processing video</h3></div>
                 }
                 
                 <div style={{position:"relative", top:"0%", marginTop:"5vh"}}>
-                  <Loader loaded={this.state.loaded} />
+                  <Loader loaded={this.state.loaded} color="#FFF" />
                 </div>
               </div>:
               <div style={{marginTop:"5vh"}}>
-                {this.state.progress == null ?
+                {this.state.progress === null ?
                   <div/>:
                   <div style={{position:"relative", top:"0%", marginTop:"5vh"}}>
                     
@@ -159,7 +196,7 @@ class App extends React.Component {
           </div> :
           <div className="context" style={{top:"10vh"}}>
             <ResultBox>
-              <h1>Who is attendance ?</h1>
+              <h1>Who is attending ?</h1>
               <ReactAudioPlayer
                 src="http://localhost:5555/getvoice"
                 autoPlay={this.state.sound}
@@ -173,13 +210,15 @@ class App extends React.Component {
                     <tr>
                       <th style={{textAlign:"center"}}><h3>Name</h3></th>
                       <th style={{textAlign:"center"}}><h3>Attendance</h3></th>
+                      
                     </tr>
                   </thead>
                   <tbody style={{color:"white", backgroundColor:"rgba(0,0,0,0.4)"}}>
                     {Object.entries(this.state.results).map(([key, value]) =>(
                       <tr key={key}>
-                        <td><h5>{key}</h5></td>
-                        <td><h5>{value}</h5></td>
+                        <td><h3>{key}</h3></td>
+                        <td><h3>{value} &nbsp;&nbsp;&nbsp;<Button bsStyle="success" bsSize="large" onClick={()=>{this.toggleAttend(key)}}>Change</Button></h3></td>
+                        
                       </tr>
                     ))}
 

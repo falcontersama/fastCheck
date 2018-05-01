@@ -147,3 +147,44 @@ body{
     }
 
 }
+
+.btn-tertiary {
+    color: #555;
+    padding: 20px !important;
+    line-height: 40px;
+    width: 500px;
+    margin: auto;
+    display: block;
+    border: 5px solid white !important;
+    border-radius: 10px;
+  }
+  .btn-tertiary:hover, .btn-tertiary:focus {
+    color: #888888;
+    border-color: #555 !important;
+  }
+  
+  /* input file style */
+  .input-file {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+  }
+  .input-file + .js-labelFile {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0 10px;
+    cursor: pointer;
+    font-size: inherit;
+    color: white;
+  }
+  .input-file + .js-labelFile .icon:before {
+    content: "\f093";
+  }
+  .input-file + .js-labelFile.has-file .icon:before {
+    content: "\f00c";
+    color: #5AAC7B;
+  }
