@@ -6,7 +6,7 @@
 > npm install 
 ```
 
-### How to start
+### How to run
 ```
 > npm start
 ```
