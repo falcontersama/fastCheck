@@ -13,7 +13,6 @@
     "react-loader": "^2.4.5",
     "react-progressbar": "^15.4.1",
     "react-sticky-table": "^2.0.4",
-    "speaker": "^0.4.1",
     "styled-components": "^3.2.6"
   },
   "devDependencies": {
