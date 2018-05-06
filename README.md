@@ -11,11 +11,11 @@
 > npm start
 ```
 
-## Description Code
-* upload video to backend
-* recieve url which you must use to follow progress from aws
-* call the url until you recieve completed result
-* change start page to result page
+### Description Code
+1. upload video to backend
+2. recieve url which you must use to follow progress from aws
+3. call the url until you recieve completed result
+4. change start page to result page
 ```
 axios.post('http://localhost:5555/upload', fd, {
       onUploadProgress: progressEvent => {
